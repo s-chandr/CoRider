@@ -1,6 +1,6 @@
 version: "3"
 services:
   likes-service:
-    image: schandrdocker/likes-service-flask-v1
+    image: schandrdocker/coRider-flask-v1
     ports:
       - 8000:3000

@@ -1,64 +1,55 @@
 from flask import Flask, jsonify, request
 from decouple import config
 from pymongo import MongoClient
-
-
+import uuid
+import time
+import bcrypt
 app = Flask(__name__)
 app.config["MONGO_URI"] = config("DATABASE_URI")
 mongo_client = MongoClient(app.config["MONGO_URI"])
 
-mongo = mongo_client["project"] 
-likes = mongo['likes']
+mongo = mongo_client["coRider"] 
+users_collection = mongo['users_collection']
 
-# Placeholder function for sending push notification
-def send_push_notification(user_id):
-    # Placeholder code for sending a push notification
-    print(f"Sending push notification to user {user_id}: You have reached 100 likes!")
+@app.route('/users', methods=['GET'])
+def get_all_users():
+    users = list(users_collection.find({}, { 'password': 0, '_id':0}))  # Excluding passwords from the response
+    return users
 
-@app.route('/like', methods=['POST'])
-def store_like_event():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    content_id = data.get('content_id')
-
-    if user_id and content_id:
-        likes.insert_one({'user_id': user_id, 'content_id': content_id})
-        # Check if user has reached 100 likes
-        like_count = len(list(likes.find({'user_id': user_id})))
-        print(like_count)
-        if like_count == 11:
-            send_push_notification(user_id)
-        return jsonify({'message': 'Like event stored successfully'})
+@app.route('/users/<string:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = users_collection.find_one({'user_id': user_id}, {'password': 0, '_id':0})
+    if user:
+        return jsonify(user)
     else:
-        return jsonify({'error': 'Invalid data provided'})
+        return jsonify({'message': 'User not found'}), 404
 
-@app.route('/like/check', methods=['POST'])
-def check_like():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    content_id = data.get('content_id')
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.json
+    password = data["password"].encode()
+    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt(12))
+    data["user_id"] = str(uuid.uuid4().hex)[:10] + str(round(time.time()))
+    data["password"] = hashed_password
+    users_collection.insert_one(data)
+    return jsonify({'message': 'User created', 'user_id': data["user_id"]}), 201
 
-    if user_id and content_id:
-        like = likes.find_one({'user_id': user_id, 'content_id': content_id})
-        
-        if like:
-            return jsonify({'liked': True})
-        else:
-            return jsonify({'liked': False})
+@app.route('/users/<string:user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.json
+    result = users_collection.update_one({'user_id': user_id}, {'$set': data})
+    if result.modified_count > 0:
+        return jsonify({'message': 'User updated'}), 200
     else:
-        return jsonify({'error': 'Invalid data provided'})
+        return jsonify({'message': 'User not found'}), 404
 
-# Total likes for a content
-@app.route('/like/total', methods=['POST'])
-def total_likes():
-    data = request.get_json()
-    content_id = data.get('content_id')
-
-    if content_id:
-        count = likes.count_documents({'content_id': content_id})
-        return jsonify({'total_likes': count})
+@app.route('/users/<string:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    result = users_collection.delete_one({'user_id': user_id})
+    if result.deleted_count > 0:
+        return jsonify({'message': 'User deleted'}), 200
     else:
-        return jsonify({'error': 'Invalid data provided'})
+        return jsonify({'message': 'User not found'}), 404
 
 
 @app.route('/', methods=['GET'])
