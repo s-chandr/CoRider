@@ -1,0 +1,13 @@
+version: "3"
+services:
+  web:
+    build:
+          context: .
+          dockerfile: Dockerfile
+    container_name: corider_backend
+    command: >
+      python app.py
+    volumes:
+      - .:/code
+    ports:
+      - "8000:3000"
