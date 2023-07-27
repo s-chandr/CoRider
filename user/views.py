@@ -1,4 +1,4 @@
-from app import api, app,mongo
+from application import api, mongo
 from flask import Blueprint , jsonify, make_response , request
 from flask_restful import Resource
 import uuid
@@ -8,7 +8,12 @@ import bcrypt
 User = Blueprint("user", __name__)  # create Blueprint
 users_collection = mongo['users_collection']
 
+#Add user and get all user
 class Register(Resource):
+    def get(self):
+        all_users_data = list(users_collection.find({}, {"_id": 0, "password": 0}))
+        if all_users_data:
+                    return all_users_data
     def post(self):
         try:
             data = request.json
@@ -28,9 +33,10 @@ class Register(Resource):
                 ),
                 500,
             )
-        
-    def get(self, user_id=None):
+class Update(Resource):
+    def get(self , user_id = None):
         try:
+            
             if user_id:
                 user_data = users_collection.find_one({"user_id": user_id}, {"_id": 0, "password": 0})
 
@@ -38,14 +44,12 @@ class Register(Resource):
                     return jsonify(user_data), 200
                 else:
                     return make_response(jsonify({"message": "User not found"}), 404)
-            else:
-                all_users_data = list(users_collection.find({}, {"_id": 0, "password": 0}))
-
-                return jsonify(all_users_data), 200
-
+            
         except Exception as e:
             return make_response(jsonify({"message": "Something went wrong", "Exception": str(e)}), 500)
-
+        
+    
+        
     def put(self, user_id=None):
         if user_id is None:
             return make_response(jsonify({"message": "User_id can not empty"}), 403)            
@@ -61,5 +65,7 @@ class Register(Resource):
             return jsonify({'message': 'User deleted'}), 200
         else:
             return jsonify({'message': 'User not found'}), 404
-        
-api.add_resource(Register, "/users/<string:user_id>")
+
+
+api.add_resource(Update, "/users/<string:user_id>")
+api.add_resource(Register , "/users")
