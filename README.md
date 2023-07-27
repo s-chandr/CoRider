@@ -39,7 +39,7 @@ replace with your creds generate from mongo atlas.
 ```
 
 5. Docker container :
-```docker pull schandrdocker/corider-flask-v1```
+```docker pull schandrdocker/corider-flask-v2```
 ## REST API Endpoints
 
 ### Get All Users
