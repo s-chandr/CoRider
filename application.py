@@ -12,9 +12,9 @@ mongo_client = MongoClient(app.config["MONGO_URI"])
 mongo = mongo_client["coRider"]
 
 # creating another flask app to handle /favicon.ico redirects and tracebacks
-favicon_app = Flask(__name__)
+ping_app = Flask(__name__)
 
-@favicon_app.route('/', methods=['GET'])
+@ping_app.route('/', methods=['GET'])
 def ping():
     return jsonify({'Ping Hello!': 'World!'})
 

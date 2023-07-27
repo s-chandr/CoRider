@@ -41,7 +41,7 @@ class Update(Resource):
                 user_data = users_collection.find_one({"user_id": user_id}, {"_id": 0, "password": 0})
 
                 if user_data:
-                    return jsonify(user_data), 200
+                    return user_data
                 else:
                     return make_response(jsonify({"message": "User not found"}), 404)
             
