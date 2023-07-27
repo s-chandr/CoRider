@@ -22,7 +22,7 @@ class Register(Resource):
             data["user_id"] = str(uuid.uuid4().hex)[:10] + str(round(time.time()))
             data["password"] = hashed_password
             users_collection.insert_one(data)
-            return jsonify({'message': 'User created', 'user_id': data["user_id"]}), 201
+            return {'message': 'User created', 'user_id': data["user_id"]}, 201
         except Exception as e:
             return make_response(
                 jsonify(
@@ -56,15 +56,16 @@ class Update(Resource):
         data = request.json
         result = users_collection.update_one({'user_id': user_id}, {'$set': data})
         if result.modified_count > 0:
-            return jsonify({'message': 'User updated'}), 200
+            return make_response(jsonify({'message': 'User updated'}), 200)
         else:
-            return jsonify({'message': 'User not found'}), 404
+            return make_response(jsonify({'message': 'User not found'}), 404)
+        
     def delete(self , user_id = None):
         result = users_collection.delete_one({'user_id': user_id})
         if result.deleted_count > 0:
-            return jsonify({'message': 'User deleted'}), 200
+            return make_response(jsonify({'message': 'User deleted'}), 200)
         else:
-            return jsonify({'message': 'User not found'}), 404
+            return make_response(jsonify({'message': 'User not found'}), 404)
 
 
 api.add_resource(Update, "/users/<string:user_id>")
