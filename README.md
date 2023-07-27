@@ -35,7 +35,7 @@ replace with your creds generate from mongo atlas.
 
 4. Finally, run the wsgi application
 ```
-  python app.py
+  python wsgi.py
 ```
 
 5. Docker container :
