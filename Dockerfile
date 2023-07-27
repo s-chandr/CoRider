@@ -18,4 +18,4 @@ RUN python3.9 -m pip install -r requirements.txt
 EXPOSE 3000
 
 #RUN
-CMD python ./app.py
+CMD python ./wsgi.py
