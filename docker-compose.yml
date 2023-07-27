@@ -6,7 +6,7 @@ services:
           dockerfile: Dockerfile
     container_name: corider_backend
     command: >
-      python app.py
+      python wsgi.py
     volumes:
       - .:/code
     ports:
